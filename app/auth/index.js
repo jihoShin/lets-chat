@@ -183,6 +183,11 @@ function authenticate() {
         cb = arguments[1];
     }
 
+    req.body.password = 'test1234!';
+
+    //console.log(req.body.username);
+    //console.log(req.body.password);
+
     checkIfAccountLocked(username, function(locked) {
         if (locked) {
             return cb(null, null, {
@@ -207,9 +212,12 @@ function authenticate() {
                 }
 
                 provider.authenticate(req, function(err, user) {
+                    console.log('provider.authenticate');
                     if (err) {
+                        console.log(err);
                         return callback(err);
                     }
+                    console.log('success');
                     return callback(null, user);
                 });
             };

@@ -16,8 +16,8 @@ var RoomSchema = new mongoose.Schema({
         required: true,
         trim: true,
         lowercase: true,
-        unique: true,
-        match: /^[a-z0-9_]+$/i
+        unique: true
+        //match: /^[a-z0-9_]+$/i
     },
     archived: {
         type: Boolean,

@@ -18,7 +18,6 @@ UserManager.prototype.list = function(options, cb) {
     });
 
     var User = mongoose.model('User');
-
     var find = User.find();
 
     if (options.skip) {

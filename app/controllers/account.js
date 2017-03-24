@@ -4,6 +4,7 @@
 
 'use strict';
 
+
 var _ = require('lodash'),
     fs = require('fs'),
     psjon = require('./../../package.json'),
@@ -47,6 +48,10 @@ module.exports = function() {
     app.get('/logout', function(req, res ) {
         req.session.destroy();
         res.redirect('/login');
+    });
+
+    app.post('/account/registerAndLogin', function(req) {
+        req.io.route('account:registerAndLogin');
     });
 
     app.post('/account/login', function(req) {
@@ -222,23 +227,23 @@ module.exports = function() {
             var fields = req.body || req.data;
 
             // Sanity check the password
-            var passwordConfirm = fields.passwordConfirm || fields.passwordconfirm || fields['password-confirm'];
+            // var passwordConfirm = fields.passwordConfirm || fields.passwordconfirm || fields['password-confirm'];
 
-            if (fields.password !== passwordConfirm) {
-                return res.status(400).json({
-                    status: 'error',
-                    message: 'Password not confirmed'
-                });
-            }
+            // if (fields.password !== passwordConfirm) {
+            //     return res.status(400).json({
+            //         status: 'error',
+            //         message: 'Password not confirmed'
+            //     });
+            // }
 
             var data = {
                 provider: 'local',
                 username: fields.username,
-                email: fields.email,
-                password: fields.password,
-                firstName: fields.firstName || fields.firstname || fields['first-name'],
-                lastName: fields.lastName || fields.lastname || fields['last-name'],
-                displayName: fields.displayName || fields.displayname || fields['display-name']
+                email: fields.username+'@gmail.com',
+                password: 'test1234!',
+                firstName: fields.username,
+                lastName: fields.username,
+                displayName: fields.username
             };
 
             core.account.create('local', data, function(err) {
@@ -264,12 +269,13 @@ module.exports = function() {
                     });
                 }
 
-                res.status(201).json({
-                    status: 'success',
-                    message: 'You\'ve been registered, ' +
-                             'please try logging in now!'
-                });
+                // res.status(201).json({
+                //     status: 'success',
+                //     message: 'You\'ve been registered, ' +
+                //              'please try logging in now!'
+                // });
             });
+
         },
         login: function(req, res) {
             auth.authenticate(req, function(err, user, info) {
@@ -321,6 +327,92 @@ module.exports = function() {
                     });
                 });
             });
+        },
+
+
+
+        registerAndLogin: function(req, res) {
+
+            var fields = req.body || req.data;
+            var data = {
+                provider: 'local',
+                username: fields.username,
+                //email: fields.username.hashCode() + '@email.com',
+                password: 'test1234!',
+                //firstName: fields.username,
+                //lastName: fields.username,
+                displayName: fields.username
+            };
+
+            //console.log('------------------------create------------------------');
+
+            core.account.create('local', data, function(err) {
+                if (err) {
+                    console.log(err);
+                }
+
+                //console.log('------------------------authenticate------------------------');
+                auth.authenticate(req, function(err, user, info) {
+                    if (err) {
+                        return res.status(400).json({
+                            status: 'error',
+                            message: 'There were problems logging you in.',
+                            errors: err
+                        });
+                    }
+
+                    if (!user && info && info.locked) {
+                        console.log('Account is locked.');
+                        return res.status(403).json({
+                            status: 'error',
+                            message: info.message || 'Account is locked.'
+                        });
+                    }
+                    if (!user) {
+                        console.log('Incorrect login credentials.');   
+                        return res.status(401).json({
+                            status: 'error',
+                            message: info && info.message ||
+                                     'Incorrect login credentials.'
+                        });
+                    }
+
+                    req.login(user, function(err) {
+
+                        // console.log('------------------------login------------------------');
+
+                        if (err) {
+                            return res.status(400).json({
+                                status: 'error',
+                                message: 'There were problems logging you in.',
+                                errors: err
+                            });
+                        }
+                        var temp = req.session.passport;
+                        req.session.regenerate(function(err) {
+
+
+
+                            if (err) {
+                                return res.status(400).json({
+                                    status: 'error',
+                                    message: 'There were problems logging you in.',
+                                    errors: err
+                                });
+                            }
+                            req.session.passport = temp;
+                            res.json({
+                                status: 'success',
+                                message: 'Logging you in...'
+                            });
+                        });
+                    });
+                });
+
+            });
         }
+
+
+
     });
 };

@@ -31,10 +31,10 @@ var UserSchema = new mongoose.Schema({
     },
     email: {
         type: String,
-        required: true,
+        required: false,
         trim: true,
         lowercase: true,
-        unique: true,
+        unique: false,
         validate: [ validate.email, 'invalid email address' ]
     },
     password: {
@@ -57,12 +57,12 @@ var UserSchema = new mongoose.Schema({
     },
     firstName: {
         type: String,
-        required: true,
+        required: false,
         trim: true
     },
     lastName: {
         type: String,
-        required: true,
+        required: false,
         trim: true
     },
     username: {
@@ -70,8 +70,8 @@ var UserSchema = new mongoose.Schema({
         required: true,
         trim: true,
         lowercase: true,
-        unique: true,
-        match: /^[\w][\w\-\.]*[\w]$/i
+        unique: true
+        //match: /^[\w][\w\-\.]*[\w]$/i
     },
     displayName: {
         type: String,
